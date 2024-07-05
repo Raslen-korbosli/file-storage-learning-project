@@ -1,8 +1,15 @@
 import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getUser } from './users';
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  const identity = await ctx.auth.getUserIdentity();
+
+  if (!identity) throw new ConvexError('u must be logged in');
+  return await ctx.storage.generateUploadUrl();
+});
 export const createFile = mutation({
-  args: { firstName: v.string(), lastName: v.string(), orgId: v.string() },
+  args: { name: v.string(), orgId: v.string(), fileId: v.id('_storage') },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
 
@@ -14,8 +21,8 @@ export const createFile = mutation({
     )
       throw new ConvexError('you dont have the access to this org');
     await ctx.db.insert('files', {
-      name: args.firstName,
-      lastName: args.lastName,
+      name: args.name,
+      fileId: args.fileId,
       orgId: args.orgId,
     });
   },
