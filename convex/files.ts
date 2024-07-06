@@ -33,11 +33,22 @@ export const getFiles = query({
   },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
-    console.log(identity?.tokenIdentifier);
     if (!identity) return [];
     return ctx.db
       .query('files')
       .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect();
+  },
+});
+export const deleteFile = mutation({
+  args: { fileId: v.id('files') },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError('u must be logged in');
+    const file = await ctx.db.get(args.fileId);
+    if (!file) throw new ConvexError('the file dosent exist');
+
+    await ctx.db.delete(args.fileId);
+    await ctx.storage.delete(file.fileId);
   },
 });
