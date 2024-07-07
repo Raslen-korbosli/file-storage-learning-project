@@ -111,7 +111,7 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
   const FileImageUrl = useQuery(api.files.getFileImageUrl, {
     fileId: file.fileId,
   });
-  console.log(FileImageUrl);
+
   const types = {
     pdf: <FileTextIcon />,
     image: <ImageIcon />,
@@ -119,16 +119,16 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
   };
 
   return (
-    <Card className="flex flex-col justify-center items-center">
+    <Card>
       <CardHeader className="relative ">
-        <div className="flex flex-4 self-start gap-4">
-          <CardTitle className="flex justify-center items-start gap-4 b-0">
+        <div className="flex flex-4 self-start">
+          <CardTitle className="flex justify-center items-start gap-2 pb-2">
             {types[file.type]}
             {file.name}
           </CardTitle>
         </div>
-        <CardContent>
-          <div className=" relative aspect-square h-[200px]  ">
+        <CardContent className="flex flex-col justify-center items-center">
+          <div className=" relative aspect-square h-[100px]  ">
             {file.type === 'image' && (
               <Image
                 alt={`${file.name} image`}
@@ -149,9 +149,9 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
         </div>
       </CardHeader>
 
-      <CardFooter>
+      <CardFooter className="flex flex-col justify-center items-center">
         <Link href={FileImageUrl ? FileImageUrl : ''} target="_blank">
-          <Button>Download</Button>
+          <Button variant="outline">Download</Button>
         </Link>
       </CardFooter>
     </Card>

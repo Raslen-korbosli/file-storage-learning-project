@@ -42,9 +42,6 @@ export default function DialogUpload() {
   const { organization } = useOrganization();
   const { user } = useUser();
   const orgId = organization ? organization.id : user?.id ?? 'skip';
-  const collectFiles = useQuery(api.files.getFiles, {
-    orgId: orgId,
-  });
 
   const session = useSession();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -102,7 +99,8 @@ export default function DialogUpload() {
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className="px-8 py-6 text-lg"
+          className=" text-lg"
+          size="lg"
           onClick={() => {}}
         >
           Upload Files
