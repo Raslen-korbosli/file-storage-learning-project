@@ -28,11 +28,22 @@ import {
 
 import { Doc } from '../../convex/_generated/dataModel';
 import { Button } from './ui/button';
-import { DeleteIcon, MoreVertical, TrashIcon } from 'lucide-react';
+import {
+  DeleteIcon,
+  FileTextIcon,
+  GanttChartIcon,
+  ImageIcon,
+  MoreVertical,
+  TrashIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useToast } from './ui/use-toast';
+import Image from 'next/image';
+function getImage(fileId: string) {
+  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
+}
 function FileCardAction({ file }: { file: Doc<'files'> }) {
   const { toast } = useToast();
   const deleteFile = useMutation(api.files.deleteFile);
@@ -95,17 +106,33 @@ function FileCardAction({ file }: { file: Doc<'files'> }) {
   );
 }
 export default function FileCard({ file }: { file: Doc<'files'> }) {
+  const types = {
+    pdf: <FileTextIcon />,
+    image: <ImageIcon />,
+    csv: <GanttChartIcon />,
+  };
   return (
-    <Card className=" ">
+    <Card className="">
       <CardHeader className="relative">
-        <CardTitle>{file.name}</CardTitle>
+        <div className="flex flex-4 items-center gap-4">
+          <CardTitle className="flex justify-center items-start b-0">
+            {file.name}
+          </CardTitle>
+          <CardContent>{types[file.type]}</CardContent>
+        </div>
+        <CardContent>
+          <Image
+            alt={`${file.name} image`}
+            width={200}
+            height={200}
+            src={getImage(file._id)}
+          />
+        </CardContent>
         <div className="absolute top-2 right-2 ">
           <FileCardAction file={file} />
         </div>
       </CardHeader>
-      <CardContent>
-        <p>Card Content</p>
-      </CardContent>
+
       <CardFooter>
         <Button>Download</Button>
       </CardFooter>

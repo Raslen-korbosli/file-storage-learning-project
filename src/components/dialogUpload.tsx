@@ -27,6 +27,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../../convex/_generated/api';
+import { Doc } from '../../convex/_generated/dataModel';
 const formSchema = z.object({
   title: z.string().min(2).max(200),
   file: z
@@ -62,11 +63,17 @@ export default function DialogUpload() {
       body: values.file[0],
     });
     const { storageId } = await result.json();
+    const types = {
+      'application/pdf': 'pdf',
+      'image/png': 'image',
+      'text/csv': 'csv',
+    } as Record<string, Doc<'files'>['type']>;
     try {
       await createFile({
         name: form.getValues('title'),
         fileId: storageId,
         orgId: orgId,
+        type: types[values.file[0].type],
       });
       form.reset();
       setDialogOpen(false);
@@ -93,7 +100,11 @@ export default function DialogUpload() {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" onClick={() => {}}>
+        <Button
+          variant="default"
+          className="px-8 py-6 text-lg"
+          onClick={() => {}}
+        >
           Upload Files
         </Button>
       </DialogTrigger>

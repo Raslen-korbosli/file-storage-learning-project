@@ -14,7 +14,8 @@ export default function Header() {
         <h1>FileStorage</h1>
         <div className="flex gap-4">
           {' '}
-          <OrganizationSwitcher /><UserButton /> 
+          <OrganizationSwitcher />
+          <UserButton />
           <SignedOut>
             <SignInButton>
               <Button>Sign In</Button>
