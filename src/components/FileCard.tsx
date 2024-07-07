@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-import { Doc } from '../../convex/_generated/dataModel';
+import { Doc, Id } from '../../convex/_generated/dataModel';
 import { Button } from './ui/button';
 import {
   DeleteIcon,
@@ -37,16 +37,18 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useToast } from './ui/use-toast';
 import Image from 'next/image';
-function getImage(fileId: string) {
-  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`;
+import Link from 'next/link';
+function getImage(fileId: Id<'_storage'>) {
+  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${'310c8a2f-b1c3-4dd8-9473-ea8d40928dd3'}`;
 }
 function FileCardAction({ file }: { file: Doc<'files'> }) {
   const { toast } = useToast();
   const deleteFile = useMutation(api.files.deleteFile);
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   return (
     <>
@@ -106,27 +108,41 @@ function FileCardAction({ file }: { file: Doc<'files'> }) {
   );
 }
 export default function FileCard({ file }: { file: Doc<'files'> }) {
+  const FileImageUrl = useQuery(api.files.getFileImageUrl, {
+    fileId: file.fileId,
+  });
+  console.log(FileImageUrl);
   const types = {
     pdf: <FileTextIcon />,
     image: <ImageIcon />,
     csv: <GanttChartIcon />,
   };
+
   return (
-    <Card className="">
-      <CardHeader className="relative">
-        <div className="flex flex-4 items-center gap-4">
-          <CardTitle className="flex justify-center items-start b-0">
+    <Card className="flex flex-col justify-center items-center">
+      <CardHeader className="relative ">
+        <div className="flex flex-4 self-start gap-4">
+          <CardTitle className="flex justify-center items-start gap-4 b-0">
+            {types[file.type]}
             {file.name}
           </CardTitle>
-          <CardContent>{types[file.type]}</CardContent>
         </div>
         <CardContent>
-          <Image
-            alt={`${file.name} image`}
-            width={200}
-            height={200}
-            src={getImage(file._id)}
-          />
+          <div className=" relative aspect-square h-[200px]  ">
+            {file.type === 'image' && (
+              <Image
+                alt={`${file.name} image`}
+                fill
+                src={FileImageUrl ? FileImageUrl : '/emptyImage.svg'}
+              />
+            )}
+            {file.type === 'pdf' && (
+              <Image alt={`${file.name} image`} fill src="/pdf.png" />
+            )}
+            {file.type === 'csv' && (
+              <Image alt={`${file.name} image`} fill src="/csv.png" />
+            )}
+          </div>
         </CardContent>
         <div className="absolute top-2 right-2 ">
           <FileCardAction file={file} />
@@ -134,7 +150,9 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
       </CardHeader>
 
       <CardFooter>
-        <Button>Download</Button>
+        <Link href={FileImageUrl ? FileImageUrl : ''} target="_blank">
+          <Button>Download</Button>
+        </Link>
       </CardFooter>
     </Card>
   );

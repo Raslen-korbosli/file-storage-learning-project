@@ -59,3 +59,14 @@ export const deleteFile = mutation({
     await ctx.storage.delete(file.fileId);
   },
 });
+export const getFileImageUrl = query({
+  args: {
+    fileId: v.id('_storage'),
+  },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError('u must be logged in');
+    const fileUrl = await ctx.storage.getUrl(args.fileId);
+    return fileUrl;
+  },
+});
