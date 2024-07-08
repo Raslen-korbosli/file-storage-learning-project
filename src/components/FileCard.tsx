@@ -140,7 +140,7 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
               <Image alt={`${file.name} image`} fill src="/pdf.png" />
             )}
             {file.type === 'csv' && (
-              <Image alt={`${file.name} image`} fill src="/csv.png" />
+              <Image alt={`${file.name} image`} fill src="/csv.png"  />
             )}
           </div>
         </CardContent>
