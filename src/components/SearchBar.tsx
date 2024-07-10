@@ -30,6 +30,7 @@ export default function SearchBar({
     },
   });
   async function onSubmit(values: z.infer<typeof formSchema>, e: any) {
+    e.preventDefault();
     setQuery(values.query);
   }
   return (

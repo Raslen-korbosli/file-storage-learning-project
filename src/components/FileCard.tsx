@@ -34,6 +34,7 @@ import {
   GanttChartIcon,
   ImageIcon,
   MoreVertical,
+  StarIcon,
   TrashIcon,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -42,13 +43,10 @@ import { api } from '../../convex/_generated/api';
 import { useToast } from './ui/use-toast';
 import Image from 'next/image';
 import Link from 'next/link';
-function getImage(fileId: Id<'_storage'>) {
-  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${'310c8a2f-b1c3-4dd8-9473-ea8d40928dd3'}`;
-}
 function FileCardAction({ file }: { file: Doc<'files'> }) {
   const { toast } = useToast();
   const deleteFile = useMutation(api.files.deleteFile);
-
+  const toggleFavorite = useMutation(api.files.toggleFavorite);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   return (
     <>
@@ -96,12 +94,23 @@ function FileCardAction({ file }: { file: Doc<'files'> }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem
+            onClick={async () => {
+              await toggleFavorite({
+                fileId: file._id,
+                orgId: file.orgId,
+              });
+            }}
+            className="flex gap-1"
+          >
+            <StarIcon className="h-4 w-4" /> Favorite
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
             onClick={() => setIsConfirmOpen(true)}
-            className="flex gap-1 text-red-600 focus:text-red-700 focus:bg-gray-50 "
+            className="flex gap-1 text-red-600 focus:text-red-700   "
           >
             <TrashIcon className="h-4 w-4" /> Delete
           </DropdownMenuItem>
-          {/* <DropdownMenuSeparator /> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </>
@@ -140,7 +149,7 @@ export default function FileCard({ file }: { file: Doc<'files'> }) {
               <Image alt={`${file.name} image`} fill src="/pdf.png" />
             )}
             {file.type === 'csv' && (
-              <Image alt={`${file.name} image`} fill src="/csv.png"  />
+              <Image alt={`${file.name} image`} fill src="/csv.png" />
             )}
           </div>
         </CardContent>

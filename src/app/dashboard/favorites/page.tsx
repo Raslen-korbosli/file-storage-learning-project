@@ -1,26 +1,5 @@
 import FileBrowser from '@/components/FileBrowser';
-import { useOrganization, useUser } from '@clerk/nextjs';
-import { useQuery } from 'convex/react';
-import { useState } from 'react';
-import { api } from '../../../../convex/_generated/api';
 
 export default function FavoritesPage() {
-  const { organization } = useOrganization();
-  const { user } = useUser();
-  const orgId = organization ? organization.id : user?.id ?? 'skip';
-  const [query, setQuery] = useState('');
-  let files = useQuery(api.files.getFiles, {
-    orgId: orgId,
-  });
-  files = files?.filter((file) =>
-    file.name.toLowerCase().startsWith(query.toLowerCase())
-  );
-  return (
-    <FileBrowser
-      title="Your Favorites"
-      files={files}
-      query={query}
-      setQuery={setQuery}
-    />
-  );
+  return <FileBrowser title="Your Favorites" favorite={true} />;
 }
