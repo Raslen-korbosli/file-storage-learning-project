@@ -1,5 +1,11 @@
 import { ConvexError, v } from 'convex/values';
-import { mutation, MutationCtx, query, QueryCtx } from './_generated/server';
+import {
+  internalMutation,
+  mutation,
+  MutationCtx,
+  query,
+  QueryCtx,
+} from './_generated/server';
 import { getUser } from './users';
 import { fileType } from './schema';
 import { ArgsArray, DefaultFunctionArgs, FunctionArgs } from 'convex/server';
@@ -24,7 +30,7 @@ export const createFile = mutation({
     if (!identity) throw new ConvexError('u must be logged in');
     const user = await getUser(ctx, identity.tokenIdentifier);
     if (
-      !user.orgId.includes(args.orgId) &&
+      !user.orgIds.some((orgId) => orgId.orgId.includes(args.orgId)) &&
       user.tokenIdentifier !== identity.tokenIdentifier
     )
       throw new ConvexError('you dont have the access to this org');
@@ -33,6 +39,8 @@ export const createFile = mutation({
       fileId: args.fileId,
       orgId: args.orgId,
       type: args.type,
+      shouldDeleted: false,
+      userId: user._id,
     });
   },
 });
@@ -41,6 +49,7 @@ export const getFiles = query({
     orgId: v.string(),
     favorites: v.optional(v.boolean()),
     query: v.string(),
+    deletedOnly: v.optional(v.boolean()),
   },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
@@ -63,14 +72,33 @@ export const getFiles = query({
           (favoriteFile) => favoriteFile.fileId === file._id
         );
       });
-      console.log(favoriteFiles);
     }
-
-    allFiles = allFiles.filter((file) =>
-      file.name.toLowerCase().startsWith(args.query.toLowerCase())
+    if (args.deletedOnly) {
+      return (allFiles = allFiles.filter((file) => file.shouldDeleted));
+    }
+    allFiles = allFiles.filter(
+      (file) =>
+        file.name.toLowerCase().startsWith(args.query.toLowerCase()) &&
+        !file.shouldDeleted
     );
 
     return allFiles;
+  },
+});
+export const deleteAllFiles = internalMutation({
+  args: {},
+  async handler(ctx, args) {
+    const files = await ctx.db
+      .query('files')
+      .withIndex('by_shouldDeleted', (q) => q.eq('shouldDeleted', true))
+      .collect();
+    if (!files) throw new ConvexError('the file dosent exist');
+    await Promise.all(
+      files.map(async (file) => {
+        await ctx.db.delete(file._id);
+        await ctx.storage.delete(file.fileId);
+      })
+    );
   },
 });
 export const deleteFile = mutation({
@@ -78,10 +106,42 @@ export const deleteFile = mutation({
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError('u must be logged in');
+    const user = await getUser(ctx, identity.tokenIdentifier);
     const file = await ctx.db.get(args.fileId);
     if (!file) throw new ConvexError('the file dosent exist');
-    await ctx.db.delete(args.fileId);
-    await ctx.storage.delete(file.fileId);
+    if (
+      user.orgIds.find((orgId) => {
+        return orgId.orgId === file?.orgId;
+      })?.role === 'admin'
+    ) {
+      // await ctx.db.delete(args.fileId);
+      // await ctx.storage.delete(file.fileId);
+      await ctx.db.patch(file._id, { shouldDeleted: true });
+    } else {
+      throw new ConvexError('you dont have the access to delete');
+    }
+  },
+});
+export const restoreFile = mutation({
+  args: { fileId: v.id('files') },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError('u must be logged in');
+    const user = await getUser(ctx, identity.tokenIdentifier);
+    const file = await ctx.db.get(args.fileId);
+    if (!file) throw new ConvexError('the file dosent exist');
+    if (
+      user.orgIds.find((orgId) => {
+        console.log(orgId.role);
+        return orgId.orgId === file?.orgId;
+      })?.role === 'admin'
+    ) {
+      // await ctx.db.delete(args.fileId);
+      // await ctx.storage.delete(file.fileId);
+      await ctx.db.patch(file._id, { shouldDeleted: false });
+    } else {
+      throw new ConvexError('you dont have the access to delete');
+    }
   },
 });
 export const getFileImageUrl = query({
@@ -108,6 +168,22 @@ export const isFavoriteFile = async (
     .first();
   return data;
 };
+export const allFavorites = query({
+  args: { orgId: v.string() },
+  async handler(ctx, args) {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const user = await getUser(ctx, identity.tokenIdentifier);
+    const data = await ctx.db
+      .query('favorites')
+      .withIndex('by_userId_orgId_fileId', (q) =>
+        q.eq('userId', user._id).eq('orgId', args.orgId)
+      )
+      .collect();
+
+    return data;
+  },
+});
 export const toggleFavorite = mutation({
   args: { fileId: v.id('files'), orgId: v.string() },
   async handler(ctx, args) {
@@ -115,7 +191,7 @@ export const toggleFavorite = mutation({
     if (!identity) throw new ConvexError('u must be logged in');
     const user = await getUser(ctx, identity.tokenIdentifier);
     if (
-      !user.orgId.includes(args.orgId) &&
+      !user.orgIds.some((orgId) => orgId.orgId.includes(args.orgId)) &&
       user.tokenIdentifier !== identity.tokenIdentifier
     )
       throw new ConvexError('you dont have the access to this org');

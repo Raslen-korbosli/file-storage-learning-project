@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { FileIcon, StarIcon } from 'lucide-react';
+import { FileIcon, StarIcon, TrashIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
@@ -28,6 +28,15 @@ export default function NavLinks() {
         >
           <StarIcon className="h-6 w-6" />
           Favorite
+        </Button>
+      </Link>
+      <Link href="/dashboard/trash">
+        <Button
+          variant="link"
+          className={`flex gap-2 items-end  text-lg ${pathName === '/dashboard/trash' ? 'text-blue-600' : 'text-gray-900'}`}
+        >
+          <TrashIcon className="h-6 w-6" />
+          Trash
         </Button>
       </Link>
     </nav>

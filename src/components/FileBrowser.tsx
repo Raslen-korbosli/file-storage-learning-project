@@ -13,19 +13,23 @@ import { useOrganization, useUser } from '@clerk/nextjs';
 export default function FileBrowser({
   title,
   favorite,
+  deletedOnly,
 }: {
   title: string;
   favorite?: boolean;
+  deletedOnly?: boolean;
 }) {
   const { organization } = useOrganization();
   const { user } = useUser();
   const orgId = organization ? organization.id : user?.id ?? 'skip';
   const [query, setQuery] = useState('');
-  let files = useQuery(api.files.getFiles, {
+  const files = useQuery(api.files.getFiles, {
     orgId: orgId,
     query,
     favorites: favorite,
+    deletedOnly,
   });
+  const allFavorites = useQuery(api.files.allFavorites, { orgId: orgId });
 
   function SearchBarHeader() {
     return (
@@ -48,18 +52,24 @@ export default function FileBrowser({
         ) : files.length > 0 ? (
           <div>
             {!query && <SearchBarHeader />}
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-              {files?.map((file) => <FileCard key={file.fileId} file={file} />)}
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4">
+              {files?.map((file) => (
+                <FileCard
+                  key={file.fileId}
+                  file={file}
+                  allFavorites={allFavorites ?? []}
+                />
+              ))}
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-start gap-4 min-h-full ">
-            <div className="relative aspect-square h-[500px]   ">
+            <div className="relative aspect-square w-[40%]">
               <Image
                 alt="picture of empty directory icon"
                 src="/empty.svg"
                 fill
-                className="absolute    "
+                className="absolute   "
               />
             </div>
             <div></div>
