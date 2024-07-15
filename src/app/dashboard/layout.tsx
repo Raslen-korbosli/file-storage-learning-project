@@ -11,12 +11,9 @@ export default function dashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      <Header />
-      <div className={` flex min-h-full `}>
-        <NavLinks />
-        {children}
-      </div>
+    <div className={` flex min-h-full pt-16 `}>
+      <NavLinks />
+      {children}
     </div>
   );
 }

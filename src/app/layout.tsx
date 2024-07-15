@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from '@/app/ConvexClientProvider';
 import { Toaster } from '@/components/ui/toaster';
+import Footer from './Footer';
+import Header from './Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,9 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} h-screen `}>
+      <body className={`${inter.className} `}>
         <ConvexClientProvider>
           <Toaster />
+          <Header />
           {children}
         </ConvexClientProvider>
       </body>

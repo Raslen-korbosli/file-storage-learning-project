@@ -57,7 +57,7 @@ export default function FileBrowser({
       <div className="container">
         <SearchBarHeader />
 
-        <>
+        <div>
           {' '}
           <Tabs defaultValue="grid" className="w-full">
             <div className=" flex justify-between ">
@@ -90,8 +90,8 @@ export default function FileBrowser({
               </div>
             ) : files.length > 0 ? (
               <>
-                <TabsContent value="grid">
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4">
+                <TabsContent value="grid" className="overflow-y-scroll">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-4 max-h-[600px]">
                     {files?.map((file) => (
                       <FileCard
                         key={file.fileId}
@@ -125,7 +125,7 @@ export default function FileBrowser({
               </div>
             )}
           </Tabs>
-        </>
+        </div>
       </div>
     </main>
   );
