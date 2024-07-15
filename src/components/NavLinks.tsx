@@ -3,8 +3,6 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { FileIcon, StarIcon, TrashIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import clsx from 'clsx';
-
 export default function NavLinks() {
   const pathName = usePathname();
 

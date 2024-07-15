@@ -50,6 +50,7 @@ export const getFiles = query({
     favorites: v.optional(v.boolean()),
     query: v.string(),
     deletedOnly: v.optional(v.boolean()),
+    type: v.string(),
   },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
@@ -58,6 +59,8 @@ export const getFiles = query({
       .query('files')
       .withIndex('by_orgId', (q) => q.eq('orgId', args.orgId))
       .collect();
+    if (args.type !== 'all')
+      allFiles = allFiles.filter((file) => file.type === args.type);
     if (args.favorites) {
       const user = await getUser(ctx, identity.tokenIdentifier);
       if (!user) return allFiles;
@@ -101,8 +104,9 @@ export const deleteAllFiles = internalMutation({
     );
   },
 });
+
 export const deleteFile = mutation({
-  args: { fileId: v.id('files') },
+  args: { fileId: v.id('files'), userId: v.string() },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError('u must be logged in');
@@ -112,7 +116,8 @@ export const deleteFile = mutation({
     if (
       user.orgIds.find((orgId) => {
         return orgId.orgId === file?.orgId;
-      })?.role === 'admin'
+      })?.role === 'admin' ||
+      file.orgId === args.userId
     ) {
       // await ctx.db.delete(args.fileId);
       // await ctx.storage.delete(file.fileId);
@@ -123,7 +128,7 @@ export const deleteFile = mutation({
   },
 });
 export const restoreFile = mutation({
-  args: { fileId: v.id('files') },
+  args: { fileId: v.id('files'), userId: v.string() },
   async handler(ctx, args) {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError('u must be logged in');
@@ -134,7 +139,8 @@ export const restoreFile = mutation({
       user.orgIds.find((orgId) => {
         console.log(orgId.role);
         return orgId.orgId === file?.orgId;
-      })?.role === 'admin'
+      })?.role === 'admin' ||
+      file.orgId === args.userId
     ) {
       // await ctx.db.delete(args.fileId);
       // await ctx.storage.delete(file.fileId);

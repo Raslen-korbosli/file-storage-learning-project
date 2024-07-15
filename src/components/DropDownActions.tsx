@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Protect } from '@clerk/nextjs';
+import { Protect, useUser } from '@clerk/nextjs';
 import { useMutation } from 'convex/react';
 import {
   DownloadIcon,
@@ -44,8 +44,8 @@ export function DropDownActions({
   const deleteFile = useMutation(api.files.deleteFile);
   const restoreFile = useMutation(api.files.restoreFile);
   const toggleFavorite = useMutation(api.files.toggleFavorite);
-
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const { user } = useUser();
   return (
     <>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
@@ -64,6 +64,7 @@ export function DropDownActions({
                 try {
                   await deleteFile({
                     fileId: file._id,
+                    userId: user ? user.id : '',
                   });
                   toast({
                     variant: 'success',
@@ -125,12 +126,24 @@ export function DropDownActions({
               Download
             </Link>
           </DropdownMenuItem>
-          <Protect role="org:admin" fallback={<></>}>
+          <Protect
+            condition={(check) => {
+              return (
+                check({
+                  role: 'org:admin',
+                }) || file.orgId === user?.id
+              );
+            }}
+            fallback={<></>}
+          >
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 file.shouldDeleted
-                  ? restoreFile({ fileId: file._id })
+                  ? restoreFile({
+                      fileId: file._id,
+                      userId: user ? user.id : '',
+                    })
                   : setIsConfirmOpen(true);
               }}
               className={`flex gap-1 ${file.shouldDeleted ? ' text-green-600 focus:text-green-700' : ' text-red-600 focus:text-red-700'} cursor-pointer `}

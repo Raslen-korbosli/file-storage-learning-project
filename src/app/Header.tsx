@@ -4,7 +4,6 @@ import {
   SignedOut,
   SignInButton,
   UserButton,
-  UserProfile,
 } from '@clerk/nextjs';
 import { FilesIcon } from 'lucide-react';
 import Image from 'next/image';
