@@ -7,8 +7,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'rightful-jackal-16.convex.cloud',
-        port: '',
-        // pathname: '/my-bucket/**',
+        // You can add more hostnames here if needed
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        // Add other patterns as necessary
       },
     ],
   },
