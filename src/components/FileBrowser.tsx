@@ -28,7 +28,6 @@ export default function FileBrowser({
   favorite?: boolean;
   deletedOnly?: boolean;
 }) {
-  console.log(favorite);
   const { organization } = useOrganization();
   const { user } = useUser();
   const orgId = organization ? organization.id : user?.id ?? 'skip';
@@ -41,7 +40,7 @@ export default function FileBrowser({
     deletedOnly,
     type,
   });
-  const allFavorites = useQuery(api.files.allFavorites, { orgId: orgId });
+  // const allFavorites = useQuery(api.files.allFavorites, { orgId: orgId });
 
   function SearchBarHeader() {
     return (
@@ -96,7 +95,7 @@ export default function FileBrowser({
                       <FileCard
                         key={file.fileId}
                         file={file}
-                        allFavorites={allFavorites ?? []}
+                        allFavorites={[]}
                       />
                     ))}
                   </div>

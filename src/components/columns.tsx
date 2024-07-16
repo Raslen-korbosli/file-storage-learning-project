@@ -28,10 +28,10 @@ function UserCell({ userId }: { userId: Id<'users'> }) {
   );
 }
 function DropDownMenu({ file }: { file: Doc<'files'> }) {
-  const allFavorites = useQuery(api.files.allFavorites, { orgId: file.orgId });
-  const isFavorite = allFavorites?.some(
-    (favorite) => favorite.fileId === file._id
-  );
+  // const allFavorites = useQuery(api.files.allFavorites, { orgId: file.orgId });
+  // const isFavorite = allFavorites?.some(
+  //   (favorite) => favorite.fileId === file._id
+  // );
   const FileImageUrl = useQuery(api.files.getFileImageUrl, {
     fileId: file.fileId,
   });
@@ -40,7 +40,7 @@ function DropDownMenu({ file }: { file: Doc<'files'> }) {
     <DropDownActions
       file={file}
       FileImageUrl={FileImageUrl ?? ''}
-      isFavorite={isFavorite ?? false}
+      isFavorite={false}
     />
   );
 }

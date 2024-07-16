@@ -174,22 +174,22 @@ export const isFavoriteFile = async (
     .first();
   return data;
 };
-export const allFavorites = query({
-  args: { orgId: v.string() },
-  async handler(ctx, args) {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return [];
-    const user = await getUser(ctx, identity.tokenIdentifier);
-    const data = await ctx.db
-      .query('favorites')
-      .withIndex('by_userId_orgId_fileId', (q) =>
-        q.eq('userId', user._id).eq('orgId', args.orgId)
-      )
-      .collect();
+// export const allFavorites = query({
+//   args: { orgId: v.string() },
+//   async handler(ctx, args) {
+//     const identity = await ctx.auth.getUserIdentity();
+//     if (!identity) return [];
+//     const user = await getUser(ctx, identity.tokenIdentifier);
+//     const data = await ctx.db
+//       .query('favorites')
+//       .withIndex('by_userId_orgId_fileId', (q) =>
+//         q.eq('userId', user._id).eq('orgId', args.orgId)
+//       )
+//       .collect();
 
-    return data;
-  },
-});
+//     return data;
+//   },
+// });
 export const toggleFavorite = mutation({
   args: { fileId: v.id('files'), orgId: v.string() },
   async handler(ctx, args) {
